@@ -1,39 +1,38 @@
-# Mindustry Java Mod Template
-A Java Mindustry mod template that works on Android and PC. The Kotlin version of this mod can be seen [here](https://github.com/Anuken/MindustryKotlinModTemplate).
+<center>
 
-## Building for Desktop Testing
+# Wayzer 地图站 客户端 Mod <img width=50 src="https://github.com/user-attachments/assets/d91f59d8-61f5-49e0-a5de-524364a096c2">
 
-1. Install JDK **17**.
-2. Run `gradlew jar` [1].
-3. Your mod jar will be in the `build/libs` directory. **Only use this version for testing on desktop. It will not work with Android.**
-To build an Android-compatible version, you need the Android SDK. You can either let Github Actions handle this, or set it up yourself. See steps below.
+<img width=600 src="https://github.com/user-attachments/assets/360595ca-0d83-4fef-a8b2-8d490dd9907a">
 
-## Building through Github Actions
+</center>
 
-This repository is set up with Github Actions CI to automatically build the mod for you every commit. This requires a Github repository, for obvious reasons.
-To get a jar file that works for every platform, do the following:
-1. Make a Github repository with your mod name, and upload the contents of this repo to it. Perform any modifications necessary, then commit and push. 
-2. Check the "Actions" tab on your repository page. Select the most recent commit in the list. If it completed successfully, there should be a download link under the "Artifacts" section. 
-3. Click the download link (should be the name of your repo). This will download a **zipped jar** - **not** the jar file itself [2]! Unzip this file and import the jar contained within in Mindustry. This version should work both on Android and Desktop.
+### 高度自定义 UI
 
-## Building Locally
+<img width=600 src="https://github.com/user-attachments/assets/afc3c309-3c64-4456-ab84-933e553c72ba">
 
-Building locally takes more time to set up, but shouldn't be a problem if you've done Android development before.
-1. Download the Android SDK, unzip it and set the `ANDROID_HOME` environment variable to its location.
-2. Make sure you have API level 30 installed, as well as any recent version of build tools (e.g. 30.0.1)
-3. Add a build-tools folder to your PATH. For example, if you have `30.0.1` installed, that would be `$ANDROID_HOME/build-tools/30.0.1`.
-4. Run `gradlew deploy`. If you did everything correctlly, this will create a jar file in the `build/libs` directory that can be run on both Android and desktop. 
+### 快速下载导入地图
 
-## Adding Dependencies
+可用于一些装载 Wayzer 插件服务器
 
-Please note that all dependencies on Mindustry, Arc or its submodules **must be declared as compileOnly in Gradle**. Never use `implementation` for core Mindustry or Arc dependencies. 
+<img width=600 src="https://github.com/user-attachments/assets/d6953938-7c8e-4b5a-866a-d5421376815a">
 
-- `implementation` **places the entire dependency in the jar**, which is, in most mod dependencies, very undesirable. You do not want the entirety of the Mindustry API included with your mod.
-- `compileOnly` means that the dependency is only around at compile time, and not included in the jar.
+### 快速服务器内投票
 
-Only use `implementation` if you want to package another Java library *with your mod*, and that library is not present in Mindustry already.
+<img width=600 src="https://github.com/user-attachments/assets/e633e8e9-063d-41fb-aa5a-46937585e549">
 
---- 
+### 地图详情
 
-*[1]* *On Linux/Mac it's `./gradlew`, but if you're using Linux I assume you know how to run executables properly anyway.*  
-*[2]: Yes, I know this is stupid. It's a Github UI limitation - while the jar itself is uploaded unzipped, there is currently no way to download it as a single file.*
+-   地图规则
+-   波次查询
+
+<img width=600 src="https://github.com/user-attachments/assets/db3addc4-8a24-4247-a123-59c07da20317">
+
+## [Wayzer 地图站]
+
+由 wayzer 搭建运营
+
+是国内**生态最完善**的地图站
+
+<img width=600 src="https://github.com/user-attachments/assets/cc71fa99-8b62-4ebb-86cb-edab2cf087f6">
+
+[Wayzer地图站]: https://www.mindustry.top/map
