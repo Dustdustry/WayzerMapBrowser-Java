@@ -19,6 +19,8 @@ public class SiteUser{
     private String token = null;
     private SiteUserInfo info = null;
 
+    private boolean fetchingInfo;
+
     public SiteUser(String version, String uuid){
         this.userAgent = "Mindustry" + "/" + version + " " + "UUID" + "/" + uuid;
     }
@@ -50,18 +52,26 @@ public class SiteUser{
     }
 
     public void info(Cons<SiteUserInfo> infoHandler, Cons<Throwable> onError){
-        if(info != null){
+        if(info != null || fetchingInfo){
             infoHandler.get(info);
             return;
         }
 
+        fetchingInfo = true;
+
         request(GET, wayzerApi + "/users/info")
-        .error(onError)
+        .error(e -> {
+            fetchingInfo = false;
+            onError.get(e);
+        })
         .submit((resp) -> {
+            fetchingInfo = false;
             String result = resp.getResultAsString();
             Core.app.post(() -> {
                 info = JsonIO.json.fromJson(SiteUserInfo.class, result);
                 infoHandler.get(info);
+
+                Log.info(result);
             });
         });
     }

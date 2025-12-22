@@ -1,6 +1,7 @@
 package mapbrowser.api;
 
 import arc.*;
+import arc.files.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.Texture.*;
@@ -11,8 +12,12 @@ import arc.util.*;
 import arc.util.Http.*;
 import arc.util.serialization.*;
 import mapbrowser.api.BackendTypes.*;
+import mapbrowser.ui.*;
+import mindustry.*;
 import mindustry.gen.*;
 import mindustry.io.*;
+import mindustry.maps.*;
+import mindustry.ui.fragments.*;
 
 import java.io.*;
 import java.net.*;
@@ -93,5 +98,39 @@ public class Backend{
         }
 
         return region;
+    }
+
+    public static void downloadImportMap(int thread, String mapName){
+        LoadingFragment loadfrag = Vars.ui.loadfrag;
+        loadfrag.show("@download");
+        loadfrag.setProgress(0f);
+
+        Fi tmp = Vars.tmpDirectory.child(mapName + "." + Vars.mapExtension);
+        Backend.downloadMap(thread, data -> {
+            loadfrag.setProgress(1f); // animate in hiding
+            loadfrag.hide();
+            tmp.writeBytes(data);
+
+            Map conflict = Vars.maps.all().find(m -> m.name().equals(mapName));
+            if(conflict != null){
+                Vars.ui.showConfirm("@confirm", Core.bundle.format("editor.overwrite.confirm", mapName), () -> {
+                    Vars.maps.tryCatchMapError(() -> {
+                        Vars.maps.removeMap(conflict);
+                        Vars.maps.importMap(tmp);
+                    });
+                    tmp.delete();
+                    BrowserUI.infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
+                });
+            }else{
+                Vars.maps.tryCatchMapError(() -> {
+                    Vars.maps.importMap(tmp);
+                });
+                tmp.delete();
+                BrowserUI.infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
+            }
+        }, err -> {
+            loadfrag.hide();
+            Vars.ui.showException(err);
+        });
     }
 }
