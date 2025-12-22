@@ -21,10 +21,8 @@ import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.ui.fragments.*;
 
-import java.lang.reflect.*;
-
 public class BrowserDialog extends BaseDialog{
-    public static final boolean enableLogin = false;
+    public static final boolean enableLogin = true;
 
     private static final Seq<SelectTag> selectTags = Seq.with(
     new SelectTag("@mode", BackendTypes.SiteGameMode.values()),
@@ -300,11 +298,27 @@ public class BrowserDialog extends BaseDialog{
             return;
         }
 
-        table.add("已登陆到资源站");
-        table.row();
+        table.defaults().growX().pad(8f);
 
-        table.defaults().minWidth(80f).pad(16f);
-        table.button("上传地图", () -> {
+        Table title = table.table().get();
+        table.row();
+        Table buttons = table.table().get();
+        table.row();
+        Table footer = table.table().get();
+
+        title.add("##已登陆到资源站");
+        user.info((info) -> {
+            title.add("##你好" + info.name);
+
+            buttons.button("##查看我的地图", () -> {
+                setUserTag(info.gid);
+            });
+        }, err -> {
+            Log.err(err);
+        });
+
+        buttons.defaults().minWidth(240f).pad(16f);
+        buttons.button("##上传地图", () -> {
             MapSelector.select("选择上传的地图", (map, hideSelector) -> {
                 Vars.ui.showConfirm("是否要上传地图：" + map.name(), () -> {
                     hideSelector.run();
@@ -319,17 +333,11 @@ public class BrowserDialog extends BaseDialog{
             });
         });
 
-        table.button("退出登录", () -> {
+        footer.button("##退出登录", () -> {
             user.logout();
             table.clearChildren();
             setupUserTable(table);
-        });
-
-        user.info((info) -> {
-            table.add("你好" + info.name);
-        }, err -> {
-            Log.err(err);
-        });
+        }).growX();
     }
 
     private void rebuildMapTable(){
@@ -378,27 +386,27 @@ public class BrowserDialog extends BaseDialog{
 
         table.table(top -> {
             top.add(name).style(Styles.outlineLabel).color(Pal.accent)
-            .align(Align.left).ellipsis(true).wrap().growX().tooltip(name);
+            .align(Align.left).wrap().growX().tooltip(name);
 
+            top.defaults().size(buttonSize);
             float imageSize = buttonSize * 0.7f;
             top.button(Icon.downloadSmall, Styles.clearNonei, imageSize, () -> {
                 Vars.ui.showConfirm("@confirm", Core.bundle.format("wayzer-maps.map-download.confirm", name), () -> {
-                    downloadMap(thread, name);
+                    Backend.downloadImportMap(thread, name);
                 });
-            }).size(buttonSize)
-            .tooltip(Core.bundle.format("wayzer-maps.map-download.hint", name), true);
+            }).tooltip(Core.bundle.format("wayzer-maps.map-download.hint", name), true);
 
             top.button(Core.atlas.drawable("wayzer-maps-vote"), Styles.clearNonei, imageSize, () -> {
                 Vars.ui.showConfirm(Core.bundle.format("wayzer-maps.map-vote.confirm", name), () -> {
                     Call.sendChatMessage("/vote map " + thread);
                     Call.sendChatMessage("1");
                 });
-            }).size(buttonSize).padLeft(4).disabled(!Vars.net.client())
+            }).padLeft(4).disabled(!Vars.net.client())
             .tooltip(Core.bundle.format("wayzer-maps.map-vote.hint", name), true);
 
             top.button(Icon.info, Styles.clearNonei, imageSize, () -> {
                 detailsDialog.show(thread);
-            }).size(buttonSize).padLeft(4)
+            }).padLeft(4)
             .tooltip("@wayzer-maps.map-info.hint");
         });
 
@@ -452,40 +460,6 @@ public class BrowserDialog extends BaseDialog{
         }
 
         return applied.toString();
-    }
-
-    private static void downloadMap(int thread, String mapName){
-        LoadingFragment loadfrag = Vars.ui.loadfrag;
-        loadfrag.show("@download");
-        loadfrag.setProgress(0f);
-
-        Fi tmp = Vars.tmpDirectory.child(mapName + "." + Vars.mapExtension);
-        Backend.downloadMap(thread, data -> {
-            loadfrag.setProgress(1f); // animate in hiding
-            loadfrag.hide();
-            tmp.writeBytes(data);
-
-            Map conflict = Vars.maps.all().find(m -> m.name().equals(mapName));
-            if(conflict != null){
-                Vars.ui.showConfirm("@confirm", Core.bundle.format("editor.overwrite.confirm", mapName), () -> {
-                    Vars.maps.tryCatchMapError(() -> {
-                        Vars.maps.removeMap(conflict);
-                        Vars.maps.importMap(tmp);
-                    });
-                    tmp.delete();
-                    BrowserUI.infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
-                });
-            }else{
-                Vars.maps.tryCatchMapError(() -> {
-                    Vars.maps.importMap(tmp);
-                });
-                tmp.delete();
-                BrowserUI.infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
-            }
-        }, err -> {
-            loadfrag.hide();
-            Vars.ui.showException(err);
-        });
     }
 
     public static class SelectTag{

@@ -137,7 +137,7 @@ public class DetailsDialog extends BaseDialog{
         int height = tags.height;
         Seq<String> mods = tags.mods;
 
-        table.add(name).align(Align.left).wrap().growX().row();
+        table.add(name).align(Align.left).padLeft(8f).wrap().growX().row();
 
         addText(table, "map-uploader", user.name, t -> {
             t.table(buttons -> {
@@ -156,7 +156,13 @@ public class DetailsDialog extends BaseDialog{
 
                 buttons.button(Icon.copy, Styles.cleari, () -> {
                     BrowserUI.setClipboard(String.valueOf(thread));
-                }).size(24);
+                });
+
+                buttons.button(Icon.download, Styles.clearNonei, () -> {
+                    Vars.ui.showConfirm("@confirm", Core.bundle.format("wayzer-maps.map-download.confirm", name), () -> {
+                        Backend.downloadImportMap(thread, name);
+                    });
+                }).tooltip(Core.bundle.format("wayzer-maps.map-download.hint", name), true);
             }).expandX().right().row();
         });
 
