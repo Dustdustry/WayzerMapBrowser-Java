@@ -41,13 +41,17 @@ public class SiteUser{
             String code = resp.getResultAsString();
             String loginUrl = resourceSite + "/user/requestToken?code=" + code;
 
-            loginHandler.get(loginUrl, () -> request(GET, wayzerApi + "/users/tokenRequest/" + code + "/result")
-            .timeout(50 * 1000)
-            .error(onError)
-            .submit((tokenResponse) -> {
-                token = tokenResponse.getResultAsString();
-                Core.app.post(() -> onFinish.get(token));
-            }));
+            Core.app.post(() -> {
+                loginHandler.get(loginUrl, () -> {
+                    request(GET, wayzerApi + "/users/tokenRequest/" + code + "/result")
+                    .timeout(50 * 1000)
+                    .error(onError)
+                    .submit((tokenResponse) -> {
+                        token = tokenResponse.getResultAsString();
+                        Core.app.post(() -> onFinish.get(token));
+                    });
+                });
+            });
         });
     }
 
@@ -91,6 +95,18 @@ public class SiteUser{
         });
     }
 
+    public void putMap(int thread, Map map, Runnable onFinish, Cons<Throwable> onError){
+        FormData formData = new FormData();
+        formData.append("file", map.file);
+
+        request(PUT, wayzerApi + "/maps" + "/" + thread)
+        .header("Content-Type", formData.getContentType())
+        .content(formData.getStream())
+        .timeout(20 * 1000)
+        .error(onError)
+        .submit((result) -> Core.app.post(onFinish));
+    }
+
     public void deleteMap(int thread, Runnable onFinish, Cons<Throwable> onError){
         request(DELETE, wayzerApi + "/maps/" + thread)
         .error(onError)
@@ -99,10 +115,6 @@ public class SiteUser{
                 if(onFinish != null) onFinish.run();
             });
         });
-    }
-
-    public void listMap(Cons<String> onFinish, Cons<Throwable> onError){
-        // TODO
     }
 
     private HttpRequest request(HttpMethod method, String url){

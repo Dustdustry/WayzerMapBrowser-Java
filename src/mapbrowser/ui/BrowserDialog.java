@@ -63,6 +63,8 @@ public class BrowserDialog extends BaseDialog{
         onResize(this::rebuild);
         closeOnBack();
 
+        detailsDialog.hidden(this::rebuild);
+
         setupButtons();
         keyDown(lastPageKeyCode, () -> {
             if(Core.scene.getKeyboardFocus() != this) return;
@@ -82,6 +84,9 @@ public class BrowserDialog extends BaseDialog{
             String uuid = Core.settings.getString("uuid", "");
             if(!uuid.isEmpty() && uuid.length() % 4 == 0){
                 user = new SiteUser(Version.buildString(), uuid);
+            }else{
+                Vars.ui.showErrorMessage("##当前存档UUID异常，无法登录");
+                return;
             }
         }
 
@@ -386,7 +391,7 @@ public class BrowserDialog extends BaseDialog{
 
         table.table(top -> {
             top.add(name).style(Styles.outlineLabel).color(Pal.accent)
-            .align(Align.left).wrap().growX().tooltip(name);
+            .align(Align.left).ellipsis(true).wrap().growX().tooltip(name);
 
             top.defaults().size(buttonSize);
             float imageSize = buttonSize * 0.7f;
@@ -405,6 +410,7 @@ public class BrowserDialog extends BaseDialog{
             .tooltip(Core.bundle.format("wayzer-maps.map-vote.hint", name), true);
 
             top.button(Icon.info, Styles.clearNonei, imageSize, () -> {
+                detailsDialog.setSiteUser(user);
                 detailsDialog.show(thread);
             }).padLeft(4)
             .tooltip("@wayzer-maps.map-info.hint");

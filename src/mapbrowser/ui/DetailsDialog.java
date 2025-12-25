@@ -30,11 +30,17 @@ public class DetailsDialog extends BaseDialog{
     private JsonValue jsonData;
     private WaveGraph waveGraph;
 
+    private SiteUser user;
+
     public DetailsDialog(){
         super("@wayzer-maps.details");
 
         resized(this::rebuildDialog);
         addCloseButton();
+    }
+
+    public void setSiteUser(SiteUser user){
+        this.user = user;
     }
 
     public void show(int thread){
@@ -126,26 +132,26 @@ public class DetailsDialog extends BaseDialog{
         table.left().top();
         table.defaults().padTop(8).growX();
 
-        SiteUserInfo user = details.user;
+        SiteUserInfo mapUser = details.user;
         String mode = details.mode;
         int thread = details.thread;
         SiteMapTags tags = details.tags;
-        String name = tags.name;
+        String mapName = tags.name;
         String author = tags.author;
         String description = tags.description;
         int width = tags.width;
         int height = tags.height;
         Seq<String> mods = tags.mods;
 
-        table.add(name).align(Align.left).padLeft(8f).wrap().growX().row();
+        table.add(mapName).align(Align.left).padLeft(8f).wrap().growX().row();
 
-        addText(table, "map-uploader", user.name, t -> {
+        addText(table, "map-uploader", mapUser.name, t -> {
             t.table(buttons -> {
                 buttons.defaults().size(32).pad(4);
 
                 buttons.button(Icon.copy, Styles.cleari, () -> {
-                    BrowserUI.setClipboard(user.gid);
-                }).size(24).tooltip(Core.bundle.format("wayzer-maps.copy-gid", user.gid), true);
+                    BrowserUI.setClipboard(mapUser.gid);
+                }).size(24).tooltip(Core.bundle.format("wayzer-maps.copy-gid", mapUser.gid), true);
             }).expand().right().row();
         });
         addText(table, "map-author", author, t -> {});
@@ -159,10 +165,10 @@ public class DetailsDialog extends BaseDialog{
                 });
 
                 buttons.button(Icon.download, Styles.clearNonei, () -> {
-                    Vars.ui.showConfirm("@confirm", Core.bundle.format("wayzer-maps.map-download.confirm", name), () -> {
-                        Backend.downloadImportMap(thread, name);
+                    Vars.ui.showConfirm("@confirm", Core.bundle.format("wayzer-maps.map-download.confirm", mapName), () -> {
+                        Backend.downloadImportMap(thread, mapName);
                     });
-                }).tooltip(Core.bundle.format("wayzer-maps.map-download.hint", name), true);
+                }).tooltip(Core.bundle.format("wayzer-maps.map-download.hint", mapName), true);
             }).expandX().right().row();
         });
 
@@ -195,6 +201,39 @@ public class DetailsDialog extends BaseDialog{
                 }).scrollX(false).maxHeight(128).pad(8).grow();
             });
         }
+
+        table.table(Tex.whiteui, userTable -> {
+            if(user != null){
+                user.info(info -> {
+                    if(!info.gid.equals(mapUser.gid)) return;
+
+                    userTable.table(buttons -> {
+                        buttons.defaults().minHeight(32f).pad(4f).margin(4f).grow().growY();
+
+                        buttons.button("##更新地图", Icon.uploadSmall, Styles.cleart, () -> {
+                            MapSelector.select("##选择更新的地图", (map, hideSelector) -> {
+                                Vars.ui.showConfirm("##确定更新地图：" + map.name(), () -> {
+                                    user.putMap(thread, map, () -> {
+                                        BrowserUI.infoToast("##更新成功");
+                                        show(thread);
+                                    }, err -> Vars.ui.showException(err));
+                                    hideSelector.run();
+                                });
+                            });
+                        });
+
+                        buttons.button("##删除地图", Icon.trashSmall, Styles.cleart, () -> {
+                            Vars.ui.showConfirm("##确定删除地图：" + mapName, () -> {
+                                user.deleteMap(thread, () -> {
+                                    BrowserUI.infoToast("##删除成功");
+                                    hide();
+                                }, err -> Vars.ui.showException(err));
+                            });
+                        });
+                    }).padLeft(8f).grow();
+                }, Log::err);
+            }
+        }).color(Pal.gray).pad(8f).growX();
     }
 
     private void addText(Table table, String tag, String text){
