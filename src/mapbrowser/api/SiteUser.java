@@ -75,7 +75,7 @@ public class SiteUser{
                 info = JsonIO.json.fromJson(SiteUserInfo.class, result);
                 infoHandler.get(info);
 
-                Log.info(result);
+//                Log.info(result);
             });
         });
     }

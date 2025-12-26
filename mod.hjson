@@ -14,7 +14,7 @@ main: "mapbrowser.Main"
 description: "A Mindustry Java mod template."
 
 #the mod version
-version: 1.4.5
+version: 1.5.0
 
 #the minimum game build required to run this mod
 minGameVersion: 154
