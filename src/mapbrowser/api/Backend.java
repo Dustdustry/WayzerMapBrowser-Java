@@ -1,7 +1,6 @@
 package mapbrowser.api;
 
 import arc.*;
-import arc.files.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.Texture.*;
@@ -12,15 +11,8 @@ import arc.util.*;
 import arc.util.Http.*;
 import arc.util.serialization.*;
 import mapbrowser.api.BackendTypes.*;
-import mapbrowser.ui.*;
-import mindustry.*;
 import mindustry.gen.*;
 import mindustry.io.*;
-import mindustry.maps.*;
-import mindustry.ui.fragments.*;
-
-import java.io.*;
-import java.net.*;
 
 import static mapbrowser.BrowserVars.wayzerApi;
 
@@ -45,7 +37,7 @@ public class Backend{
     public static void downloadMap(int thread, Cons<byte[]> cons, Cons<Throwable> onError){
         Http.request(HttpMethod.GET, wayzerApi + "/maps/" + thread + ".msav")
         .timeout(50 * 1000)
-        .error(onError)
+        .error(err -> Core.app.post(() -> onError.get(err)))
         .submit(resp -> {
             byte[] result = resp.getResult();
             Core.app.post(() -> cons.get(result));
@@ -56,7 +48,7 @@ public class Backend{
         String url = wayzerApi + "/maps/" + thread + ".json";
         Http.request(HttpMethod.GET, url)
         .timeout(10 * 1000)
-        .error(onError)
+        .error(err -> Core.app.post(() -> onError.get(err)))
         .submit(resp -> {
             String result = resp.getResultAsString();
 
@@ -73,6 +65,10 @@ public class Backend{
                 onSuccess.get(details, value);
             });
         });
+    }
+
+    public static void clearPreview(int thread){
+        previewCache.put(thread, null);
     }
 
     public static TextureRegion fetchPreview(int thread, String url){
@@ -98,39 +94,5 @@ public class Backend{
         }
 
         return region;
-    }
-
-    public static void downloadImportMap(int thread, String mapName){
-        LoadingFragment loadfrag = Vars.ui.loadfrag;
-        loadfrag.show("@download");
-        loadfrag.setProgress(0f);
-
-        Fi tmp = Vars.tmpDirectory.child(mapName + "." + Vars.mapExtension);
-        Backend.downloadMap(thread, data -> {
-            loadfrag.setProgress(1f); // animate in hiding
-            loadfrag.hide();
-            tmp.writeBytes(data);
-
-            Map conflict = Vars.maps.all().find(m -> m.name().equals(mapName));
-            if(conflict != null){
-                Vars.ui.showConfirm("@confirm", Core.bundle.format("editor.overwrite.confirm", mapName), () -> {
-                    Vars.maps.tryCatchMapError(() -> {
-                        Vars.maps.removeMap(conflict);
-                        Vars.maps.importMap(tmp);
-                    });
-                    tmp.delete();
-                    BrowserUI.infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
-                });
-            }else{
-                Vars.maps.tryCatchMapError(() -> {
-                    Vars.maps.importMap(tmp);
-                });
-                tmp.delete();
-                BrowserUI.infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
-            }
-        }, err -> {
-            loadfrag.hide();
-            Vars.ui.showException(err);
-        });
     }
 }

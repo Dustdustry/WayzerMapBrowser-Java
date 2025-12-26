@@ -1,7 +1,6 @@
 package mapbrowser.ui;
 
 import arc.Core;
-import arc.files.*;
 import arc.flabel.*;
 import arc.input.*;
 import arc.math.*;
@@ -16,10 +15,8 @@ import mindustry.Vars;
 import mindustry.core.*;
 import mindustry.gen.*;
 import mindustry.graphics.Pal;
-import mindustry.maps.*;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
-import mindustry.ui.fragments.*;
 
 public class BrowserDialog extends BaseDialog{
     public static final boolean enableLogin = true;
@@ -63,7 +60,7 @@ public class BrowserDialog extends BaseDialog{
         onResize(this::rebuild);
         closeOnBack();
 
-        detailsDialog.hidden(this::rebuild);
+        detailsDialog.hidden(this::rebuildMapTable);
 
         setupButtons();
         keyDown(lastPageKeyCode, () -> {
@@ -169,6 +166,8 @@ public class BrowserDialog extends BaseDialog{
         cont.clear();
         cont.top();
 
+        userTable.clear();
+
         if(!searchTable.hasChildren()) setupSearchTable(searchTable);
         if(!userTable.hasChildren()) setupUserTable(userTable);
 
@@ -182,7 +181,7 @@ public class BrowserDialog extends BaseDialog{
 
                 left.add(searchTable).row();
                 left.defaults().padTop(64);
-                left.add(userTable).grow();
+                left.add(userTable).growX();
             }).pad(16).grow();
 
             float mapTableWidth = Core.graphics.getWidth() / Scl.scl() * 2 / 3;
@@ -191,7 +190,9 @@ public class BrowserDialog extends BaseDialog{
             cont.add(mapTable).width(mapTableWidth).pad(8).fillY();
         }else{
             // 竖屏布局
-            cont.table(this::setupSearchTable).growX();
+            cont.table(this::setupSearchTable).height(240f).growX();
+            cont.row();
+            cont.add(userTable).growX();
             cont.row();
 
             float mapTableWidth = Core.graphics.getWidth() / Scl.scl();
@@ -294,36 +295,27 @@ public class BrowserDialog extends BaseDialog{
     private void setupUserTable(Table table){
         if(!enableLogin) return;
 
+        table.background(Styles.grayPanel);
+
         boolean logged = user != null && user.logged();
         table.top();
 
         if(!logged){
             table.button(Core.bundle.get("wayzer-maps.login"), this::login)
-            .minWidth(180);
+            .minHeight(48f).grow().get().setStyle(Styles.cleart);
             return;
         }
 
-        table.defaults().growX().pad(8f);
+        table.defaults().pad(4f).growY();
 
         Table title = table.table().get();
-        table.row();
-        Table buttons = table.table().get();
-        table.row();
-        Table footer = table.table().get();
+        Table buttons = table.table().growX().get();
+        Table fooster = table.table().get();
 
         title.add("##已登陆到资源站");
-        user.info((info) -> {
-            title.add("##你好" + info.name);
 
-            buttons.button("##查看我的地图", () -> {
-                setUserTag(info.gid);
-            });
-        }, err -> {
-            Log.err(err);
-        });
-
-        buttons.defaults().minWidth(240f).pad(16f);
-        buttons.button("##上传地图", () -> {
+        buttons.defaults().padLeft(8f).padRight(8f).grow();
+        buttons.button("##上传地图", Icon.uploadSmall, Styles.cleart, () -> {
             MapSelector.select("选择上传的地图", (map, hideSelector) -> {
                 Vars.ui.showConfirm("是否要上传地图：" + map.name(), () -> {
                     hideSelector.run();
@@ -338,11 +330,20 @@ public class BrowserDialog extends BaseDialog{
             });
         });
 
-        footer.button("##退出登录", () -> {
+        user.info((info) -> {
+            title.row();
+            title.add("##你好" + info.name).pad(4f);
+
+            buttons.button("##查看我的地图", Icon.eyeSmall, Styles.cleart, () -> {
+                setUserTag(info.gid);
+            });
+        }, Log::err);
+
+        fooster.button("##退出登录", Icon.exitSmall, Styles.cleart, () -> {
             user.logout();
             table.clearChildren();
             setupUserTable(table);
-        }).growX();
+        }).width(72f).growY();
     }
 
     private void rebuildMapTable(){
@@ -397,7 +398,7 @@ public class BrowserDialog extends BaseDialog{
             float imageSize = buttonSize * 0.7f;
             top.button(Icon.downloadSmall, Styles.clearNonei, imageSize, () -> {
                 Vars.ui.showConfirm("@confirm", Core.bundle.format("wayzer-maps.map-download.confirm", name), () -> {
-                    Backend.downloadImportMap(thread, name);
+                    BrowserUI.downloadImportMap(thread, name);
                 });
             }).tooltip(Core.bundle.format("wayzer-maps.map-download.hint", name), true);
 

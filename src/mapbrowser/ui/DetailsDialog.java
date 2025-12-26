@@ -4,7 +4,6 @@ import arc.*;
 import arc.func.*;
 import arc.graphics.g2d.*;
 import arc.scene.style.*;
-import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -23,7 +22,6 @@ import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 
 import java.lang.reflect.*;
-import java.util.*;
 
 public class DetailsDialog extends BaseDialog{
     private SiteMapDetails details;
@@ -166,7 +164,7 @@ public class DetailsDialog extends BaseDialog{
 
                 buttons.button(Icon.download, Styles.clearNonei, () -> {
                     Vars.ui.showConfirm("@confirm", Core.bundle.format("wayzer-maps.map-download.confirm", mapName), () -> {
-                        Backend.downloadImportMap(thread, mapName);
+                        BrowserUI.downloadImportMap(thread, mapName);
                     });
                 }).tooltip(Core.bundle.format("wayzer-maps.map-download.hint", mapName), true);
             }).expandX().right().row();
@@ -211,13 +209,19 @@ public class DetailsDialog extends BaseDialog{
                         buttons.defaults().minHeight(32f).pad(4f).margin(4f).grow().growY();
 
                         buttons.button("##更新地图", Icon.uploadSmall, Styles.cleart, () -> {
-                            MapSelector.select("##选择更新的地图", (map, hideSelector) -> {
+                            MapSelector.select("##选择更新后的地图", (map, hideSelector) -> {
                                 Vars.ui.showConfirm("##确定更新地图：" + map.name(), () -> {
+                                    hideSelector.run();
+                                    BrowserUI.setLoadingText(cont);
+
                                     user.putMap(thread, map, () -> {
                                         BrowserUI.infoToast("##更新成功");
                                         show(thread);
-                                    }, err -> Vars.ui.showException(err));
-                                    hideSelector.run();
+                                        Backend.clearPreview(thread);
+                                    }, err -> {
+                                        Vars.ui.showException(err);
+                                        BrowserUI.setLoadFailedText(cont);
+                                    });
                                 });
                             });
                         });

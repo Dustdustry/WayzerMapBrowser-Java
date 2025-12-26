@@ -1,6 +1,7 @@
 package mapbrowser.ui;
 
 import arc.*;
+import arc.files.*;
 import arc.flabel.*;
 import arc.func.*;
 import arc.math.*;
@@ -10,9 +11,12 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.scene.utils.*;
 import arc.util.*;
+import mapbrowser.api.*;
 import mindustry.*;
 import mindustry.graphics.*;
+import mindustry.maps.*;
 import mindustry.ui.*;
+import mindustry.ui.fragments.*;
 
 public class BrowserUI{
     public static TextField deboundTextField(String text, Cons<String> changed){
@@ -80,6 +84,40 @@ public class BrowserUI{
     public static void setClipboard(String text){
         Core.app.setClipboardText(text);
         infoToast(Core.bundle.format("copy.hint", text), 4);
+    }
+
+    public static void downloadImportMap(int thread, String mapName){
+        LoadingFragment loadfrag = Vars.ui.loadfrag;
+        loadfrag.show("@download");
+        loadfrag.setProgress(0f);
+
+        Fi tmp = Vars.tmpDirectory.child(mapName + "." + Vars.mapExtension);
+        Backend.downloadMap(thread, data -> {
+            loadfrag.setProgress(1f); // animate in hiding
+            loadfrag.hide();
+            tmp.writeBytes(data);
+
+            Map conflict = Vars.maps.all().find(m -> m.name().equals(mapName));
+            if(conflict != null){
+                Vars.ui.showConfirm("@confirm", Core.bundle.format("editor.overwrite.confirm", mapName), () -> {
+                    Vars.maps.tryCatchMapError(() -> {
+                        Vars.maps.removeMap(conflict);
+                        Vars.maps.importMap(tmp);
+                    });
+                    tmp.delete();
+                    infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
+                });
+            }else{
+                Vars.maps.tryCatchMapError(() -> {
+                    Vars.maps.importMap(tmp);
+                });
+                tmp.delete();
+                infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
+            }
+        }, err -> Core.app.post(() -> {
+            loadfrag.hide();
+            Vars.ui.showException(err);
+        }));
     }
 
     public static class DeboundTextField extends TextField{

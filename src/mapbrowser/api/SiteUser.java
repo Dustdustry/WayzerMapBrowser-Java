@@ -36,7 +36,7 @@ public class SiteUser{
 
     public void login(Cons2<String, Runnable> loginHandler, Cons<String> onFinish, Cons<Throwable> onError){
         request(POST, wayzerApi + "/users/tokenRequest")
-        .error(onError)
+        .error(err -> Core.app.post(() -> onError.get(err))) // too ugly
         .submit((resp) -> {
             String code = resp.getResultAsString();
             String loginUrl = resourceSite + "/user/requestToken?code=" + code;
@@ -66,7 +66,7 @@ public class SiteUser{
         request(GET, wayzerApi + "/users/info")
         .error(e -> {
             fetchingInfo = false;
-            onError.get(e);
+            Core.app.post(() -> onError.get(e));
         })
         .submit((resp) -> {
             fetchingInfo = false;
@@ -88,7 +88,7 @@ public class SiteUser{
         .header("Content-Type", formData.getContentType())
         .content(formData.getStream())
         .timeout(20 * 1000)
-        .error(onError)
+        .error(err -> Core.app.post(() -> onError.get(err)))
         .submit((result) -> {
             int thread = Integer.parseInt(result.getResultAsString());
             Core.app.post(() -> onFinish.get(thread));
@@ -103,13 +103,13 @@ public class SiteUser{
         .header("Content-Type", formData.getContentType())
         .content(formData.getStream())
         .timeout(20 * 1000)
-        .error(onError)
+        .error(err -> Core.app.post(() -> onError.get(err)))
         .submit((result) -> Core.app.post(onFinish));
     }
 
     public void deleteMap(int thread, Runnable onFinish, Cons<Throwable> onError){
         request(DELETE, wayzerApi + "/maps/" + thread)
-        .error(onError)
+        .error(err -> Core.app.post(() -> onError.get(err)))
         .submit((result) -> {
             Core.app.post(() -> {
                 if(onFinish != null) onFinish.run();
