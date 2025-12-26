@@ -20,15 +20,18 @@ import static mindustry.Vars.*;
 
 public class MapSelector{
     private static CustomGameDialog dialog;
+    private static Cons2<Map, Runnable> consumer;
 
     public static void select(String title, Cons2<Map, Runnable> cons){
+        consumer = cons;
+
         if(dialog == null){
             // Thanks anuke :(
             dialog = new CustomGameDialog();
             Reflect.set(dialog, "dialog", new MapPlayDialog(){
                 @Override
                 public void show(Map map){
-                    cons.get(map, dialog::hide);
+                    consumer.get(map, dialog::hide);
                 }
             });
         }
