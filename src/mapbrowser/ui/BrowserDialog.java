@@ -116,7 +116,7 @@ public class BrowserDialog extends BaseDialog{
             loginDialog.addCloseListener();
         }, (err) -> {
             loginDialog.hide();
-            Vars.ui.showException(Core.bundle.get("wayzer-maps.login-faild"), err);
+            Vars.ui.showException(Core.bundle.get("wayzer-maps.login-failed"), err);
         });
 
         loginDialog.hidden(() -> {

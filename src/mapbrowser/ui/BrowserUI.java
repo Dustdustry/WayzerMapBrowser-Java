@@ -70,7 +70,7 @@ public class BrowserUI{
     public static void setLoadFailedText(Table table) {
         table.clearChildren();
 
-        FLabel label = new FLabel(Core.bundle.get("wayzer-maps.faild"));
+        FLabel label = new FLabel(Core.bundle.get("wayzer-maps.failed"));
         table.add(label).color(Pal.lightishGray).fontScale(1.3f).expand();
     }
 
@@ -105,14 +105,14 @@ public class BrowserUI{
                         Vars.maps.importMap(tmp);
                     });
                     tmp.delete();
-                    infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
+                    infoToast(Core.bundle.format("wayzer-maps.map-download.success", mapName), 5);
                 });
             }else{
                 Vars.maps.tryCatchMapError(() -> {
                     Vars.maps.importMap(tmp);
                 });
                 tmp.delete();
-                infoToast(Core.bundle.format("wayzer-maps.map-download.successed", mapName), 5);
+                infoToast(Core.bundle.format("wayzer-maps.map-download.success", mapName), 5);
             }
         }, err -> Core.app.post(() -> {
             loadfrag.hide();
