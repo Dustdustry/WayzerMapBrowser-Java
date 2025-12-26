@@ -208,30 +208,30 @@ public class DetailsDialog extends BaseDialog{
                     userTable.table(buttons -> {
                         buttons.defaults().minHeight(32f).pad(4f).margin(4f).grow().growY();
 
-                        buttons.button("##更新地图", Icon.uploadSmall, Styles.cleart, () -> {
-                            MapSelector.select("##选择更新后的地图", (map, hideSelector) -> {
-                                Vars.ui.showConfirm("##确定更新地图：" + map.name(), () -> {
+                        buttons.button("@wayzer-maps.mapUpdate", Icon.uploadSmall, Styles.cleart, () -> {
+                            MapSelector.select("@wayzer-maps.mapUpdate.select", (map, hideSelector) -> {
+                                Vars.ui.showConfirm(Core.bundle.format("wayzer-maps.mapUpdate.confirm", mapName), () -> {
                                     hideSelector.run();
                                     BrowserUI.setLoadingText(cont);
 
                                     user.putMap(thread, map, () -> {
-                                        BrowserUI.infoToast("##更新成功");
+                                        BrowserUI.infoToast("@wayzer-maps.mapUpdate.success");
                                         show(thread);
                                         Backend.clearPreview(thread);
                                     }, err -> {
-                                        Vars.ui.showException(err);
+                                        Vars.ui.showException("@wayzer-maps.mapUpdate.failed", err);
                                         BrowserUI.setLoadFailedText(cont);
                                     });
                                 });
                             });
                         });
 
-                        buttons.button("##删除地图", Icon.trashSmall, Styles.cleart, () -> {
-                            Vars.ui.showConfirm("##确定删除地图：" + mapName, () -> {
+                        buttons.button("@wayzer-maps.mapDelete", Icon.trashSmall, Styles.cleart, () -> {
+                            Vars.ui.showConfirm(Core.bundle.format("wayzer-maps.mapDelete.confirm", mapName), () -> {
                                 user.deleteMap(thread, () -> {
-                                    BrowserUI.infoToast("##删除成功");
+                                    BrowserUI.infoToast("@wayzer-maps.mapDelete.success");
                                     hide();
-                                }, err -> Vars.ui.showException(err));
+                                }, err -> Vars.ui.showException("@wayzer-maps.mapDelete.failed", err));
                             });
                         });
                     }).padLeft(8f).grow();

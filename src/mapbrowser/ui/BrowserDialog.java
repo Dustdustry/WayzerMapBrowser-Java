@@ -82,7 +82,7 @@ public class BrowserDialog extends BaseDialog{
             if(!uuid.isEmpty() && uuid.length() % 4 == 0){
                 user = new SiteUser(Version.buildString(), uuid);
             }else{
-                Vars.ui.showErrorMessage("##当前存档UUID异常，无法登录");
+                Vars.ui.showErrorMessage("@wayzer-maps.uuidError");
                 return;
             }
         }
@@ -312,34 +312,34 @@ public class BrowserDialog extends BaseDialog{
         Table buttons = table.table().growX().get();
         Table fooster = table.table().get();
 
-        title.add("##已登陆到资源站");
+        title.add("@wayzer-maps.login.wasLogin");
 
         buttons.defaults().padLeft(8f).padRight(8f).grow();
-        buttons.button("##上传地图", Icon.uploadSmall, Styles.cleart, () -> {
-            MapSelector.select("选择上传的地图", (map, hideSelector) -> {
-                Vars.ui.showConfirm("是否要上传地图：" + map.name(), () -> {
+        buttons.button("@wayzer-maps.upload.map", Icon.uploadSmall, Styles.cleart, () -> {
+            MapSelector.select("@wayzer-maps.upload.select", (map, hideSelector) -> {
+                Vars.ui.showConfirm(Core.bundle.format("wayzer-maps.upload.confirm", map.name()), () -> {
                     hideSelector.run();
 
                     Vars.ui.loadfrag.show("Uploading");
                     user.postMap(map, thread -> {
                         Vars.ui.loadfrag.hide();
-                        BrowserUI.infoToast("上传成功");
+                        BrowserUI.infoToast("@wayzer-maps.upload.success");
                         detailsDialog.safeShow(thread);
-                    }, err -> Vars.ui.showException("上传失败", err));
+                    }, err -> Vars.ui.showException("@wayzer-maps.upload.failed", err));
                 });
             });
         });
 
         user.info((info) -> {
             title.row();
-            title.add("##你好" + info.name).pad(4f);
+            title.add(Core.bundle.format("wayzer-maps.user.welcome", info.name)).pad(4f);
 
-            buttons.button("##查看我的地图", Icon.eyeSmall, Styles.cleart, () -> {
+            buttons.button("@wayzer-maps.user.viewMaps", Icon.eyeSmall, Styles.cleart, () -> {
                 setUserTag(info.gid);
             });
         }, Log::err);
 
-        fooster.button("##退出登录", Icon.exitSmall, Styles.cleart, () -> {
+        fooster.button("@wayzer-maps.login.logout", Icon.exitSmall, Styles.cleart, () -> {
             user.logout();
             table.clearChildren();
             setupUserTable(table);
