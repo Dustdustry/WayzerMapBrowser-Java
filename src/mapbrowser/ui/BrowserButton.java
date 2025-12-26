@@ -33,7 +33,7 @@ public class BrowserButton{
             Core.scene.add(table);
             // 初始位置
             table.setPosition(0, Core.scene.getHeight() / 2, Align.left);
-            label.addListener(new DragListener(table, true));
+            label.addListener(new DragListener(table));
         }
     }
 
