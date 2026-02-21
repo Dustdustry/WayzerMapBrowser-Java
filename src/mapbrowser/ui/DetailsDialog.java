@@ -64,7 +64,7 @@ public class DetailsDialog extends BaseDialog{
             this.jsonData = value;
             rebuildDialog();
             show();
-        }, null);
+        }, e -> {});
     }
 
     private void rebuildDialog(){
