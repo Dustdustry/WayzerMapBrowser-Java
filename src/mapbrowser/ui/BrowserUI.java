@@ -126,7 +126,7 @@ public class BrowserUI{
 
         public DeboundTextField(String text, float seconds, Cons<String> deboundCons){
             setText(text);
-            keeper = new Timekeeper(seconds);
+            keeper = Timekeeper.ofSeconds(seconds);
 
             changed(() -> {
                 keeping = true;

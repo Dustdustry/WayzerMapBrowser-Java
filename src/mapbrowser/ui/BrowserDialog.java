@@ -51,7 +51,7 @@ public class BrowserDialog extends BaseDialog{
     private String userTag = "";
 
     private int page = 0;
-    private final Timekeeper pageTimer = new Timekeeper(0.25f);
+    private final Timekeeper pageTimer = Timekeeper.ofSeconds(0.25f);
 
     public BrowserDialog(){
         super("@wayzer-maps.browser");

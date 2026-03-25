@@ -13,7 +13,6 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.ui.*;
-import mindustryX.features.ui.*;
 
 public class BrowserButton{
     private static Table table;
@@ -27,8 +26,16 @@ public class BrowserButton{
 
         setupTable();
 
+        Class<?> overlayUI = null;
         if(BrowserVars.clientX){
-            OverlayUI.INSTANCE.registerWindow("wayzer-maps", table);
+            try{
+                overlayUI = Class.forName("mindustryX.features.ui.OverlayUI");
+            }catch(ClassNotFoundException ignored){}
+        }
+
+        if(overlayUI != null){
+            Object instance = Reflect.get(overlayUI, "INSTANCE");
+            Reflect.invoke(instance, "registerWindow", new Object[]{"wayzer-maps", table}, String.class, Table.class);
         }else{
             Core.scene.add(table);
             // 初始位置
