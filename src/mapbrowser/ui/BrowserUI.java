@@ -88,7 +88,7 @@ public class BrowserUI{
 
     public static void downloadImportMap(int thread, String mapName){
         LoadingFragment loadfrag = Vars.ui.loadfrag;
-        loadfrag.show("@download");
+        loadfrag.show("@downloading");
         loadfrag.setProgress(0f);
 
         Fi tmp = Vars.tmpDirectory.child(mapName + "." + Vars.mapExtension);
