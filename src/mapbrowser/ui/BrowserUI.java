@@ -108,11 +108,14 @@ public class BrowserUI{
                     infoToast(Core.bundle.format("wayzer-maps.map-download.success", mapName), 5);
                 });
             }else{
+                final Map[] map = {null};
                 Vars.maps.tryCatchMapError(() -> {
-                    Vars.maps.importMap(tmp);
+                    map[0] = Vars.maps.importMap(tmp);
                 });
                 tmp.delete();
-                infoToast(Core.bundle.format("wayzer-maps.map-download.success", mapName), 5);
+                if(map[0] != null){
+                    infoToast(Core.bundle.format("wayzer-maps.map-download.success", mapName), 5);
+                }
             }
         }, err -> Core.app.post(() -> {
             loadfrag.hide();
