@@ -91,7 +91,7 @@ public class BrowserUI{
         loadfrag.show("@downloading");
         loadfrag.setProgress(0f);
 
-        Fi tmp = Vars.tmpDirectory.child(mapName + "." + Vars.mapExtension);
+        Fi tmp = Vars.tmpDirectory.child(Strings.sanitizeFilename(Strings.stripColors(mapName)) + "." + Vars.mapExtension);
         Backend.downloadMap(thread, data -> {
             loadfrag.setProgress(1f); // animate in hiding
             loadfrag.hide();
